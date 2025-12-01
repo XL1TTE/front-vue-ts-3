@@ -7,12 +7,12 @@ import type { Answer, Question } from '../domain/Question.ts'
 
 const props = defineProps<{
   questions: Array<Question>
-  answers?: Map<string | number, Array<Answer>>
+  answersCache: Record<string | number, Array<Answer>>
 }>()
 
-const emit = defineEmits({
-  answer: () => true,
-})
+const emit = defineEmits<{
+  (e: 'answer', answer: Answer, question: Question): void
+}>()
 
 const currentStep = ref(0)
 const isLastStep = computed(() => currentStep.value === props.questions.length - 1)
@@ -21,18 +21,12 @@ const currentQuestion = computed(() => {
   return props.questions[currentStep.value]
 })
 
-// const answerOptions = computed(() => {
-//   if (currentQuestion?.value !== undefined) {
-//     props.answers?.get(currentQuestion.value.id)
-//   }
-// })
-
 const canGoNext = computed(() => {
   const question = currentQuestion.value
   if (!question) {
     return false
   }
-  const answer = props.answers?.get(question.id)
+  const answer = props.answersCache[question.id]
   if (question.type === 'checkbox') {
     return Array.isArray(answer) && answer.length > 0
   }
@@ -40,8 +34,12 @@ const canGoNext = computed(() => {
   return !!answer
 })
 
-// function onAnswer() {}
-//
+function onAnswer(answers: Answer) {
+  if (currentQuestion?.value) {
+    emit('answer', answers, currentQuestion.value)
+  }
+}
+
 // function onGoNext() {
 //   if (!canGoNext.value) return
 //   if (!isLastStep.value) currentStep.value++
@@ -54,7 +52,7 @@ const canGoNext = computed(() => {
 <template>
   <ProgressBar :current-step="currentStep" :total-steps="questions.length" />
 
-  <QuestionCard v-if="currentQuestion" :question="currentQuestion" />
+  <QuestionCard v-if="currentQuestion" :question="currentQuestion" @answer="onAnswer" />
 
   <NavigationButtons
     :can-go-back="currentStep > 0"

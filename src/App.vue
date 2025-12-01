@@ -2,8 +2,13 @@
 import SurveyForm from './components/SurveyForm.vue'
 import SummaryPanel from './components/SummaryPanel.vue'
 import { surveyQuestions } from './data/questions.js'
+import type { Answer, Question } from './domain/Question.ts'
 
-// function onAnswer() {}
+const cachedAnswers: Record<string | number, Answer> = {}
+
+function onAnswer(answer: Answer, question: Question): void {
+  cachedAnswers[question.id] = answer
+}
 
 // function resetSurvey() {}
 </script>
@@ -15,7 +20,11 @@ import { surveyQuestions } from './data/questions.js'
 
       <div class="grid gap-6 md:grid-cols-2">
         <div class="bg-white rounded-2xl shadow p-6">
-          <SurveyForm :questions="surveyQuestions" />
+          <SurveyForm
+            :answersCache="cachedAnswers"
+            :questions="surveyQuestions"
+            @answer="onAnswer"
+          />
         </div>
 
         <SummaryPanel :survey-questions="surveyQuestions" />

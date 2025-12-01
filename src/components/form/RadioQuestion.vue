@@ -6,6 +6,7 @@ const { name = 'radio-group' } = defineProps<{
   name?: string
 }>()
 
+// Single answer as option id
 const modelValue = defineModel<string>()
 </script>
 

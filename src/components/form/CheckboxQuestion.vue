@@ -5,7 +5,8 @@ defineProps<{
   options: Array<Option>
 }>()
 
-const modelValue = defineModel({ type: Array<Option>, default: () => [] })
+// Multiple answers as option ids
+const modelValue = defineModel<Array<string>>()
 </script>
 
 <template>

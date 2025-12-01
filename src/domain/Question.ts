@@ -4,16 +4,24 @@ interface Option {
 }
 
 interface Answer {
-  value: string | number | Array<string>
+  value: string | Array<string>
+}
+
+const QuestionType = {
+  radio: 0,
+  checkbox: 1,
+  text: 2,
+  select: 3,
 }
 
 interface Question {
   id: string | number
-  type: 'radio' | 'checkbox' | 'text' | 'select'
+  type: QuestionType
   title: string
   description?: string
   placeholder?: string
   options?: Option[]
 }
 
+export type QuestionType = keyof typeof QuestionType
 export type { Question, Option, Answer }
