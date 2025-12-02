@@ -42,7 +42,6 @@ const canGoNext = computed(() => {
   // For questions with multiple answers user
   // must provide at least one.
   if (Array.isArray(answer)) {
-    console.log(answer.length)
     return answer.length > 0
   }
 
@@ -51,18 +50,9 @@ const canGoNext = computed(() => {
 
 // Should be triggered when user choose any of answers.
 function onAnswer(answer: Answer) {
-  if (currentQuestion.value && isAnswerValid(answer)) {
+  if (currentQuestion.value) {
     emit('answer', answer, currentQuestion.value)
   }
-}
-
-const isAnswerValid = (answer: Answer): boolean => {
-  if (answer === null) {
-    return false
-  } else if (Array.isArray(answer) && answer.length < 1) {
-    return false
-  }
-  return true
 }
 
 function onNextRequested() {

@@ -16,7 +16,7 @@ const modelValue = defineModel<Answer>()
       :key="option.value"
       class="flex items-center gap-2 cursor-pointer"
     >
-      <input v-model="modelValue" :name="name" :value="option.value" type="radio" />
+      <input v-model="modelValue" :name="name" :value="option" type="radio" />
       <span>{{ option.label }}</span>
     </label>
   </div>

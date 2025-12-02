@@ -1,11 +1,9 @@
 <script lang="ts" setup>
-import type { Answer } from '../../domain/Question.ts'
-
 defineProps<{
   placeholder: string
 }>()
 
-const modelValue = defineModel<Answer>()
+const modelValue = defineModel<string>()
 </script>
 
 <template>

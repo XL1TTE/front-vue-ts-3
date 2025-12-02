@@ -11,7 +11,7 @@ const modelValue = defineModel<Answer>()
 <template>
   <select v-model="modelValue" class="border rounded p-2 w-full bg-white">
     <option disabled value="">Выберите вариант...</option>
-    <option v-for="option in options" :key="option.value" :value="option.value">
+    <option v-for="option in options" :key="option.value" :value="option">
       {{ option.label }}
     </option>
   </select>

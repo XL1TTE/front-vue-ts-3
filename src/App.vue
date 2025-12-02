@@ -2,20 +2,40 @@
 import SurveyForm from './components/SurveyForm.vue'
 import SummaryPanel from './components/SummaryPanel.vue'
 import { surveyQuestions } from './data/questions.js'
-import type { Answer, Question } from './domain/Question.ts'
-import { reactive } from 'vue'
+import type { Answer, Option, Question } from './domain/Question.ts'
+import { computed, reactive, ref } from 'vue'
 
 const cachedAnswers = reactive<Record<string | number, Answer>>({})
+const sessionKey = ref(0)
 
 function onAnswer(answer: Answer, question: Question): void {
   cachedAnswers[question.id] = answer
 }
 
-// function resetSurvey() {
-//   Object.keys(cachedAnswers).forEach((key) => {
-//     delete cachedAnswers[key]
-//   })
-// }
+const answersForSummary = computed(() => {
+  const result: Record<string | number, string | Array<string> | null> = {}
+
+  Object.entries(cachedAnswers).forEach(([id, answer]) => {
+    let renderedAnswers: string | Array<string> | null
+
+    if (Array.isArray(answer)) {
+      renderedAnswers = answer.map((answer: Option) => {
+        return answer.label
+      })
+    } else {
+      renderedAnswers = answer?.label ?? null
+    }
+    result[id] = renderedAnswers
+  })
+  return result
+})
+
+function resetSurvey() {
+  Object.keys(cachedAnswers).forEach((key) => {
+    delete cachedAnswers[key]
+  })
+  ++sessionKey.value
+}
 </script>
 
 <template>
@@ -26,13 +46,19 @@ function onAnswer(answer: Answer, question: Question): void {
       <div class="grid gap-6 md:grid-cols-2">
         <div class="bg-white rounded-2xl shadow p-6">
           <SurveyForm
+            :key="sessionKey"
             :answersCache="cachedAnswers"
             :questions="surveyQuestions"
+            :session-key="sessionKey"
             @answer="onAnswer"
           />
         </div>
 
-        <SummaryPanel :survey-questions="surveyQuestions" />
+        <SummaryPanel
+          :answers="answersForSummary"
+          :survey-questions="surveyQuestions"
+          @answers-reset-requested="resetSurvey"
+        />
       </div>
     </div>
   </div>

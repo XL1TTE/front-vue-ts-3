@@ -15,7 +15,7 @@ const emit = defineEmits<{
   (e: 'answer', answer: Answer): void
 }>()
 
-const localAnswers = ref<Answer>(null)
+const localAnswers = ref<Answer | string>(null)
 
 const QuestionTemplatesMap: Record<QuestionType, Component> = {
   radio: RadioQuestion,
@@ -39,10 +39,11 @@ watch(
 watch(
   () => localAnswers.value,
   (answers) => {
-    if (answers === null) {
-      return
+    if (typeof answers === 'string') {
+      emit('answer', { label: answers, value: answers })
+    } else {
+      emit('answer', answers)
     }
-    emit('answer', answers)
   },
 )
 </script>

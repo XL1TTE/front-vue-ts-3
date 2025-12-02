@@ -1,9 +1,13 @@
 <script lang="ts" setup>
-import type { Answer, Question } from '../domain/Question.ts'
+import type { Question } from '../domain/Question.ts'
 
 defineProps<{
-  answers?: Map<string | number, Answer | Array<Answer>>
+  answers: Record<string | number, string | Array<string> | null>
   surveyQuestions: Array<Question>
+}>()
+
+const emit = defineEmits<{
+  (e: 'answersResetRequested'): void
 }>()
 </script>
 
@@ -14,16 +18,23 @@ defineProps<{
       <div v-for="question in surveyQuestions" :key="question.id" class="border rounded-lg p-3">
         <div class="text-sm text-gray-500">{{ question.title }}</div>
         <div class="font-medium">
-          <template v-if="Array.isArray(answers?.get(question.id))">
-            {{ answers.get(question.id) }}
+          <template v-if="Array.isArray(answers[question.id])">
+            <ul v-for="answer in answers[question.id]">
+              <li>- {{ answer }}</li>
+            </ul>
           </template>
           <template v-else>
-            {{ answers?.get(question.id) ?? '—' }}
+            {{ answers[question.id] ?? '—' }}
           </template>
         </div>
       </div>
     </div>
 
-    <button class="mt-6 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Сбросить ответы</button>
+    <button
+      class="mt-6 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
+      @click="emit('answersResetRequested')"
+    >
+      Сбросить ответы
+    </button>
   </div>
 </template>

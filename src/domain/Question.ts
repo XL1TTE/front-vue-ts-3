@@ -3,7 +3,7 @@ interface Option {
   label: string
 }
 
-type Answer = string | Array<string> | null
+type Answer = Option | Array<Option> | null
 
 const QuestionType = {
   radio: 0,
