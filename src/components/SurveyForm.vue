@@ -7,7 +7,7 @@ import type { Answer, Question } from '../domain/Question.ts'
 
 const props = defineProps<{
   questions: Array<Question>
-  answersCache: Record<string | number, Array<Answer>>
+  answersCache: Record<string | number, Answer>
 }>()
 
 const emit = defineEmits<{
@@ -17,46 +17,78 @@ const emit = defineEmits<{
 const currentStep = ref(0)
 const isLastStep = computed(() => currentStep.value === props.questions.length - 1)
 
+// Compute current question instance by index.
 const currentQuestion = computed(() => {
   return props.questions[currentStep.value]
 })
 
+// Compute cached answers for current question if any exists.
+const cachedAnswersForCurrentQuestion = computed(() => {
+  if (!currentQuestion.value) return null
+
+  const cached = props.answersCache[currentQuestion.value.id]
+  return cached ? cached : null
+})
+
+/// Evaluates if user should be able to request next question.
 const canGoNext = computed(() => {
   const question = currentQuestion.value
+  const answer = cachedAnswersForCurrentQuestion.value
+
   if (!question) {
     return false
   }
-  const answer = props.answersCache[question.id]
-  if (question.type === 'checkbox') {
-    return Array.isArray(answer) && answer.length > 0
+
+  // For questions with multiple answers user
+  // must provide at least one.
+  if (Array.isArray(answer)) {
+    console.log(answer.length)
+    return answer.length > 0
   }
 
   return !!answer
 })
 
-function onAnswer(answers: Answer) {
-  if (currentQuestion?.value) {
-    emit('answer', answers, currentQuestion.value)
+// Should be triggered when user choose any of answers.
+function onAnswer(answer: Answer) {
+  if (currentQuestion.value && isAnswerValid(answer)) {
+    emit('answer', answer, currentQuestion.value)
   }
 }
 
-// function onGoNext() {
-//   if (!canGoNext.value) return
-//   if (!isLastStep.value) currentStep.value++
-// }
-// function onGoBack() {
-//   if (currentStep.value > 0) currentStep.value--
-// }
+const isAnswerValid = (answer: Answer): boolean => {
+  if (answer === null) {
+    return false
+  } else if (Array.isArray(answer) && answer.length < 1) {
+    return false
+  }
+  return true
+}
+
+function onNextRequested() {
+  if (!canGoNext.value) return
+  if (!isLastStep.value) currentStep.value++
+}
+function onPreviousRequested() {
+  if (currentStep.value > 0) currentStep.value--
+}
 </script>
 
 <template>
   <ProgressBar :current-step="currentStep" :total-steps="questions.length" />
 
-  <QuestionCard v-if="currentQuestion" :question="currentQuestion" @answer="onAnswer" />
+  <QuestionCard
+    v-if="currentQuestion"
+    :answer-cached="cachedAnswersForCurrentQuestion"
+    :question="currentQuestion"
+    @answer="onAnswer"
+  />
 
   <NavigationButtons
     :can-go-back="currentStep > 0"
     :can-go-next="canGoNext"
     :is-last-step="isLastStep"
+    @requested-next="onNextRequested"
+    @requested-previous="onPreviousRequested"
   />
 </template>

@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import type { Option } from '../../domain/Question.ts'
+import type { Answer, Option } from '../../domain/Question.ts'
 
 defineProps<{
   options: Array<Option>
 }>()
 
-// Multiple answers as option ids
-const modelValue = defineModel<Array<string>>()
+const modelValue = defineModel<Answer>()
 </script>
 
 <template>
@@ -16,7 +15,7 @@ const modelValue = defineModel<Array<string>>()
       :key="option.value"
       class="flex items-center gap-2 cursor-pointer"
     >
-      <input v-model="modelValue" :value="option" type="checkbox" />
+      <input v-model="modelValue" :value="option.value" type="checkbox" />
       <span>{{ option.label }}</span>
     </label>
   </div>

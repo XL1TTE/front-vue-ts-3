@@ -4,25 +4,18 @@ import RadioQuestion from '../form/RadioQuestion.vue'
 import CheckboxQuestion from '../form/CheckboxQuestion.vue'
 import SelectQuestion from '../form/SelectQuestion.vue'
 import TextQuestion from '../form/TextQuestion.vue'
-import { type Component, ref, watchEffect } from 'vue'
+import { type Component, ref, watch } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   question: Question
   answerCached?: Answer
 }>()
 
 const emit = defineEmits<{
-  (e: 'answer', value: Answer): void
+  (e: 'answer', answer: Answer): void
 }>()
 
-const currentAnswer = ref<Answer>()
-
-// Broadcast to parent on answer.
-watchEffect(() => {
-  if (currentAnswer?.value !== undefined) {
-    emit('answer', currentAnswer.value)
-  }
-})
+const localAnswers = ref<Answer>(null)
 
 const QuestionTemplatesMap: Record<QuestionType, Component> = {
   radio: RadioQuestion,
@@ -30,6 +23,28 @@ const QuestionTemplatesMap: Record<QuestionType, Component> = {
   select: SelectQuestion,
   text: TextQuestion,
 }
+
+// Reset answers on question changed.
+watch(
+  () => props.question,
+  () => {
+    if (props.answerCached !== undefined && props.answerCached !== null) {
+      localAnswers.value = props.answerCached
+    } else {
+      localAnswers.value = props.question.type === 'checkbox' ? [] : null
+    }
+  },
+)
+
+watch(
+  () => localAnswers.value,
+  (answers) => {
+    if (answers === null) {
+      return
+    }
+    emit('answer', answers)
+  },
+)
 </script>
 
 <template>
@@ -41,8 +56,10 @@ const QuestionTemplatesMap: Record<QuestionType, Component> = {
 
     <component
       :is="QuestionTemplatesMap[question.type]"
-      v-model="currentAnswer"
+      v-model="localAnswers"
+      :name="question.type === 'text' ? question.title : null"
       :options="question.options"
+      :placeholder="question.type === 'text' ? question.placeholder : null"
     />
   </div>
 </template>

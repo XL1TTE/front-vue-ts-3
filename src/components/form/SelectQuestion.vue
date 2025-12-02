@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import type { Option } from '../../domain/Question.ts'
+import type { Answer, Option } from '../../domain/Question.ts'
 
 defineProps<{
   options: Array<Option>
 }>()
 
-const modelValue = defineModel<string>()
+const modelValue = defineModel<Answer>()
 </script>
 
 <template>

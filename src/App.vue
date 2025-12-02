@@ -3,14 +3,19 @@ import SurveyForm from './components/SurveyForm.vue'
 import SummaryPanel from './components/SummaryPanel.vue'
 import { surveyQuestions } from './data/questions.js'
 import type { Answer, Question } from './domain/Question.ts'
+import { reactive } from 'vue'
 
-const cachedAnswers: Record<string | number, Answer> = {}
+const cachedAnswers = reactive<Record<string | number, Answer>>({})
 
 function onAnswer(answer: Answer, question: Question): void {
   cachedAnswers[question.id] = answer
 }
 
-// function resetSurvey() {}
+// function resetSurvey() {
+//   Object.keys(cachedAnswers).forEach((key) => {
+//     delete cachedAnswers[key]
+//   })
+// }
 </script>
 
 <template>

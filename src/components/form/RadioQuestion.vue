@@ -1,13 +1,12 @@
 <script lang="ts" setup>
-import type { Option } from '../../domain/Question.ts'
+import type { Answer, Option } from '../../domain/Question.ts'
 
 const { name = 'radio-group' } = defineProps<{
   options: Array<Option>
   name?: string
 }>()
 
-// Single answer as option id
-const modelValue = defineModel<string>()
+const modelValue = defineModel<Answer>()
 </script>
 
 <template>

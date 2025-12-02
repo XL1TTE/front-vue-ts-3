@@ -24,7 +24,6 @@ export const surveyQuestions: Array<Question> = [
       { value: 'wellness', label: 'Spa и релакс' },
     ],
   },
-
   {
     id: 'budget',
     type: 'select',
