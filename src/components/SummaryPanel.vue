@@ -1,14 +1,41 @@
 <script lang="ts" setup>
-import type { Question } from '../domain/Question.ts'
+import type { Answer, Question } from '../domain/Question.ts'
+import { computed } from 'vue'
 
-defineProps<{
-  answers: Record<string | number, string | Array<string> | null>
+const props = defineProps<{
+  answers: Record<string | number, Answer>
   surveyQuestions: Array<Question>
 }>()
+
+const answersDisplayValue = computed<Record<string | number, string | string[]>>(() => {
+  const result: Record<string | number, string | string[]> = {}
+
+  Object.entries(props.answers).forEach(([id, answer]) => {
+    switch (answer.type) {
+      case 'checkbox':
+        result[id] = answer.values.map((item) => item.label)
+        break
+      case 'radio':
+      case 'select':
+        result[id] = answer.label
+        break
+      case 'text':
+        result[id] = answer.value
+        break
+      default:
+        result[id] = 'N/A'
+    }
+  })
+  return result
+})
 
 const emit = defineEmits<{
   (e: 'answersResetRequested'): void
 }>()
+
+const getDisplayValue = (questionId: string | number) => {
+  return answersDisplayValue.value[questionId]
+}
 </script>
 
 <template>
@@ -18,14 +45,21 @@ const emit = defineEmits<{
       <div v-for="question in surveyQuestions" :key="question.id" class="border rounded-lg p-3">
         <div class="text-sm text-gray-500">{{ question.title }}</div>
         <div class="font-medium">
-          <template v-if="Array.isArray(answers[question.id])">
-            <ul v-for="answer in answers[question.id]">
-              <li>- {{ answer }}</li>
-            </ul>
-          </template>
-          <template v-else>
-            {{ answers[question.id] ?? '—' }}
-          </template>
+          <div class="text-gray-800">
+            <template v-if="getDisplayValue(question.id)">
+              <ul v-if="Array.isArray(getDisplayValue(question.id))" class="list-disc list-inside">
+                <li v-for="answerLabel in getDisplayValue(question.id)" :key="answerLabel">
+                  {{ answerLabel }}
+                </li>
+              </ul>
+              <p v-else>
+                {{ getDisplayValue(question.id) }}
+              </p>
+            </template>
+            <template v-else>
+              <p class="text-gray-400 italic">Ответ не предоставлен</p>
+            </template>
+          </div>
         </div>
       </div>
     </div>

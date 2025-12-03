@@ -8,6 +8,7 @@ defineProps<{
 const emit = defineEmits<{
   (e: 'requestedNext'): void
   (e: 'requestedPrevious'): void
+  (e: 'requestedEnd'): void
 }>()
 </script>
 
@@ -24,7 +25,7 @@ const emit = defineEmits<{
     <button
       :disabled="!canGoNext"
       class="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-      @click="emit('requestedNext')"
+      @click="isLastStep ? emit('requestedEnd') : emit('requestedNext')"
     >
       {{ isLastStep ? 'Завершить' : 'Далее' }}
     </button>

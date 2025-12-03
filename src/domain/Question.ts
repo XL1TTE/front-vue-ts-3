@@ -1,25 +1,52 @@
-interface Option {
+interface RadioAnswer {
+  type: 'radio'
   value: string
   label: string
 }
+interface CheckBoxAnswer {
+  type: 'checkbox'
+  values: Array<{ value: string; label: string }>
+}
+interface TextAnswer {
+  type: 'text'
+  value: string
+}
+interface SelectAnswer {
+  type: 'select'
+  value: string
+  label: string
+}
+type Answer = RadioAnswer | CheckBoxAnswer | TextAnswer | SelectAnswer
 
-type Answer = Option | Array<Option> | null
-
-const QuestionType = {
-  radio: 0,
-  checkbox: 1,
-  text: 2,
-  select: 3,
+export type QuestionType = 'radio' | 'checkbox' | 'text' | 'select'
+interface QuestionOption {
+  label: string
+  value: string
 }
 
-interface Question {
+interface BaseQuestion {
   id: string | number
-  type: QuestionType
   title: string
-  description?: string
-  placeholder?: string
-  options?: Option[]
+  description: string
 }
 
-export type QuestionType = keyof typeof QuestionType
-export type { Question, Option, Answer }
+export interface RadioQuestion extends BaseQuestion {
+  type: 'radio'
+  options: QuestionOption[]
+}
+export interface CheckBoxQuestion extends BaseQuestion {
+  type: 'checkbox'
+  options: QuestionOption[]
+}
+export interface TextQuestion extends BaseQuestion {
+  type: 'text'
+  placeholder: string
+}
+export interface SelectQuestion extends BaseQuestion {
+  type: 'select'
+  options: QuestionOption[]
+}
+
+export type Question = RadioQuestion | CheckBoxQuestion | TextQuestion | SelectQuestion
+
+export type { Answer, QuestionOption, TextAnswer, RadioAnswer, CheckBoxAnswer, SelectAnswer }

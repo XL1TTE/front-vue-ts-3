@@ -2,39 +2,31 @@
 import SurveyForm from './components/SurveyForm.vue'
 import SummaryPanel from './components/SummaryPanel.vue'
 import { surveyQuestions } from './data/questions.js'
-import type { Answer, Option, Question } from './domain/Question.ts'
+import type { Answer, Question } from './domain/Question.ts'
 import { computed, reactive, ref } from 'vue'
+import QuestionCreator from './components/form/QuestionCreator.vue'
 
+const questions = ref([...surveyQuestions])
 const cachedAnswers = reactive<Record<string | number, Answer>>({})
 const sessionKey = ref(0)
 
-function onAnswer(answer: Answer, question: Question): void {
-  cachedAnswers[question.id] = answer
+function onAnswer(answer: Answer | null, question: Question): void {
+  if (answer !== null) {
+    cachedAnswers[question.id] = answer
+  }
 }
 
-const answersForSummary = computed(() => {
-  const result: Record<string | number, string | Array<string> | null> = {}
-
-  Object.entries(cachedAnswers).forEach(([id, answer]) => {
-    let renderedAnswers: string | Array<string> | null
-
-    if (Array.isArray(answer)) {
-      renderedAnswers = answer.map((answer: Option) => {
-        return answer.label
-      })
-    } else {
-      renderedAnswers = answer?.label ?? null
-    }
-    result[id] = renderedAnswers
-  })
-  return result
-})
+const answersSummary = computed(() => cachedAnswers)
 
 function resetSurvey() {
   Object.keys(cachedAnswers).forEach((key) => {
     delete cachedAnswers[key]
   })
   ++sessionKey.value
+}
+
+const addQuestion = (newQuestion: Question) => {
+  questions.value.push(newQuestion)
 }
 </script>
 
@@ -48,17 +40,19 @@ function resetSurvey() {
           <SurveyForm
             :key="sessionKey"
             :answersCache="cachedAnswers"
-            :questions="surveyQuestions"
-            :session-key="sessionKey"
+            :questions="questions"
             @answer="onAnswer"
+            @submit-form="resetSurvey"
           />
         </div>
 
         <SummaryPanel
-          :answers="answersForSummary"
-          :survey-questions="surveyQuestions"
+          :answers="answersSummary"
+          :survey-questions="questions"
           @answers-reset-requested="resetSurvey"
         />
+
+        <QuestionCreator @question-created="addQuestion" />
       </div>
     </div>
   </div>

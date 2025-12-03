@@ -15,6 +15,7 @@ export const surveyQuestions: Array<Question> = [
   {
     id: 'travel_type',
     type: 'checkbox',
+    description: 'Выберите один или несколько вариантов',
     title: 'Какие виды путешествий вам интересны?',
     options: [
       { value: 'beach', label: 'Пляжный отдых' },
@@ -28,6 +29,7 @@ export const surveyQuestions: Array<Question> = [
     id: 'budget',
     type: 'select',
     title: 'Какой бюджет вы обычно планируете на поездку?',
+    description: 'Выберите вариант из выпадающего списка',
     options: [
       { value: '1', label: 'До $500' },
       { value: '5', label: '$1000–2000' },
@@ -38,6 +40,7 @@ export const surveyQuestions: Array<Question> = [
     id: 'dream_destination',
     type: 'text',
     title: 'Куда вы мечтаете поехать?',
+    description: 'Введите ответ',
     placeholder: 'Например: Исландия, Япония, Новая Зеландия',
   },
 ]

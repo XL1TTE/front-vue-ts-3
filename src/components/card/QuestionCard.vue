@@ -8,15 +8,18 @@ import { type Component, ref, watch } from 'vue'
 
 const props = defineProps<{
   question: Question
-  answerCached?: Answer
+  cachedAnswer: Answer | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'answer', answer: Answer): void
+  (e: 'onAnswerChanged', answer: Answer | null): void
 }>()
 
-const localAnswers = ref<Answer | string>(null)
+// Answer for local card environment.
+//  In other words -> answer for current question.
+const currentAnswer = ref<Answer | null>(null)
 
+// Map: [question type, renderer]
 const QuestionTemplatesMap: Record<QuestionType, Component> = {
   radio: RadioQuestion,
   checkbox: CheckboxQuestion,
@@ -24,27 +27,22 @@ const QuestionTemplatesMap: Record<QuestionType, Component> = {
   text: TextQuestion,
 }
 
-// Reset answers on question changed.
+// Watcher: Resets question card state
+// when question changed.
 watch(
-  () => props.question,
-  () => {
-    if (props.answerCached !== undefined && props.answerCached !== null) {
-      localAnswers.value = props.answerCached
-    } else {
-      localAnswers.value = props.question.type === 'checkbox' ? [] : null
-    }
-  },
+  () => props.question.id,
+  () => (currentAnswer.value = props.cachedAnswer ?? null),
 )
 
+// Watcher: Emits event to parent -> answer has been changed.
 watch(
-  () => localAnswers.value,
-  (answers) => {
-    if (typeof answers === 'string') {
-      emit('answer', { label: answers, value: answers })
-    } else {
-      emit('answer', answers)
-    }
-  },
+  () => currentAnswer.value,
+  (answer) => emit('onAnswerChanged', answer),
+)
+// Watcher: Emits event to parent -> answer has been changed.
+watch(
+  () => props.cachedAnswer,
+  (cache) => (currentAnswer.value = cache),
 )
 </script>
 
@@ -57,9 +55,10 @@ watch(
 
     <component
       :is="QuestionTemplatesMap[question.type]"
-      v-model="localAnswers"
+      :key="question.id"
+      v-model="currentAnswer"
       :name="question.type === 'text' ? question.title : null"
-      :options="question.options"
+      :options="question.type !== 'text' ? question.options : null"
       :placeholder="question.type === 'text' ? question.placeholder : null"
     />
   </div>

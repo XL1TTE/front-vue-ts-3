@@ -11,7 +11,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'answer', answer: Answer, question: Question): void
+  (e: 'answer', answer: Answer | null, question: Question): void
+  (e: 'submitForm'): void
 }>()
 
 const currentStep = ref(0)
@@ -19,47 +20,60 @@ const isLastStep = computed(() => currentStep.value === props.questions.length -
 
 // Compute current question instance by index.
 const currentQuestion = computed(() => {
-  return props.questions[currentStep.value]
+  return props.questions[currentStep.value] ?? null
 })
 
-// Compute cached answers for current question if any exists.
-const cachedAnswersForCurrentQuestion = computed(() => {
+// Compute cached answers for current question if any,
+// other way -> null.
+const cachedAnswer = computed(() => {
   if (!currentQuestion.value) return null
 
   const cached = props.answersCache[currentQuestion.value.id]
-  return cached ? cached : null
+  return cached ?? null
 })
 
 /// Evaluates if user should be able to request next question.
-const canGoNext = computed(() => {
-  const question = currentQuestion.value
-  const answer = cachedAnswersForCurrentQuestion.value
+const canRequestNext = computed(() => {
+  const cur_question = currentQuestion.value
+  const cur_answer = cachedAnswer.value
 
-  if (!question) {
+  // No question to answer -> false
+  if (cur_question === null) {
+    return false
+  }
+  // No answer -> false
+  if (cur_answer === null) {
     return false
   }
 
-  // For questions with multiple answers user
-  // must provide at least one.
-  if (Array.isArray(answer)) {
-    return answer.length > 0
+  // Checkbox require at least one answer, otherwise -> false
+  if (cur_answer.type === 'checkbox') {
+    return cur_answer.values.length > 0
   }
 
-  return !!answer
+  return true
 })
 
-// Should be triggered when user choose any of answers.
-function onAnswer(answer: Answer) {
-  if (currentQuestion.value) {
+// Callback: Triggered when answer for
+// current question has been changed.
+function AnswerChanged(answer: Answer | null) {
+  if (currentQuestion.value !== null) {
     emit('answer', answer, currentQuestion.value)
   }
 }
-
-function onNextRequested() {
-  if (!canGoNext.value) return
-  if (!isLastStep.value) currentStep.value++
+// Callback: Submits form -> all questions answered.
+function SubmitForm() {
+  emit('submitForm')
 }
-function onPreviousRequested() {
+
+function NextQuestion() {
+  // noinspection PointlessBooleanExpressionJS
+  if (canRequestNext.value === false) return
+
+  // noinspection PointlessBooleanExpressionJS
+  if (isLastStep.value === false) currentStep.value++
+}
+function PreviousQuestion() {
   if (currentStep.value > 0) currentStep.value--
 }
 </script>
@@ -69,16 +83,17 @@ function onPreviousRequested() {
 
   <QuestionCard
     v-if="currentQuestion"
-    :answer-cached="cachedAnswersForCurrentQuestion"
+    :cached-answer="cachedAnswer"
     :question="currentQuestion"
-    @answer="onAnswer"
+    @on-answer-changed="AnswerChanged"
   />
 
   <NavigationButtons
     :can-go-back="currentStep > 0"
-    :can-go-next="canGoNext"
+    :can-go-next="canRequestNext"
     :is-last-step="isLastStep"
-    @requested-next="onNextRequested"
-    @requested-previous="onPreviousRequested"
+    @requested-next="NextQuestion"
+    @requested-previous="PreviousQuestion"
+    @requested-end="SubmitForm"
   />
 </template>
